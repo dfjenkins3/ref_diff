@@ -5,7 +5,7 @@ ref_diff is a pipeline to compare reference genome versions through
 differential expression. When upgrading to a new reference genome
 version it's important to understand how any changes to the underlying
 reference genome sequence will affect differential expression analysis.
-This pipeline takes old alignment data and realignes the data to a new
+This pipeline takes old alignment data and realigns the data to a new
 reference genome and performs differential analysis between the two.
 
 Tools in this pipeline may take a long time to run on large files and
