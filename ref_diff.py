@@ -87,4 +87,4 @@ if __name__ == "__main__":
     verify_file(args.fq1)
     verify_file(args.fq2)
     verify_file(args.fq1)
-    main(args.oldbam, args.oldun)
+    main(args.fq1, args.fq2, args.newtrans, args.newref, args.output_dir, args.threads)

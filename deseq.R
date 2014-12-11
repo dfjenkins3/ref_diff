@@ -1,6 +1,6 @@
 ###DESeq Analysis
-source("http://bioconductor.org/biocLite.R")
-biocLite("DESeq2")
+#source("http://bioconductor.org/biocLite.R")
+#biocLite("DESeq2")
 library("DESeq2")
 
 
