@@ -58,3 +58,46 @@ genome version. For hg38, run the following command:
 ```
 bowtie-build hg38.fa hg38 
 ```
+
+### Running ref_diff
+
+After your computing environment has been set up with all of the required software packages, you can
+run the pipeline by running the python script
+
+```
+python ref_diff.py \
+    --oldbam   <old_alignment.bam \
+    --fq1      <reads_1.fastq.gz> \
+    --fq2      <reads_2.fastq.gz> \
+    --oldgtf   <old_genome_gtf_file> \
+    --newref   <new_genome_ref_index> \
+    --newtrans <new_genome_transcipt_index> \
+    --threads  <number_of_threads> \
+    test_out
+```
+
+When the script completes the results of all the tools will be written to the output directory that you
+specified in the script.  The output directory contains all of the typical files that result from
+a tophat run plus additional files created by the pipeline:
+
+
+| Name | Description |
+|-----------|-------------|
+| DEseq2.results.annotated.csv | DESeq2 results annotated with raw count, chromosome, and gene name |
+| DESeq2.results.csv | DESeq2 results |
+| DESeq2.results.png | Plot of log fold change in expression between old and new genomes |
+| accepted_hits.bam | alignment file from new genome |
+| accepted_hits.name.bam | name sorted alignment file for new genome |
+| accepted_hits.name.counts.txt | count file produced by htseq-count for new bam file |
+| accepted_hits.name.counts.txt.intersect | count file of all features found in both old and new genome |
+| align_summary.txt | Summary of tophat alignment |
+| deletions.bed | bed file of predicted deletions |
+| insertions.bed | bed file of predicted insertions |
+| junctions.bed | bed file of predicted junctions |
+| logs | directory of logs |
+| prep_reads.info | |
+| previous.bam | softlink to previous bam file location |
+| previous.name.bam | name sorted previous bam file |
+| previous.name.counts.txt | count file produced by htseq-count for old bam file |
+| previous.name.counts.txt.intersect | count file of all features found in both old and new genome |
+| unmapped.bam | bam alignment file containing all unmapped reads |
