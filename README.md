@@ -95,7 +95,7 @@ a tophat run plus additional files created by the pipeline:
 | insertions.bed | bed file of predicted insertions |
 | junctions.bed | bed file of predicted junctions |
 | logs | directory of logs |
-| prep_reads.info | |
+| prep_reads.info | Read metric information created by tophat |
 | previous.bam | softlink to previous bam file location |
 | previous.name.bam | name sorted previous bam file |
 | previous.name.counts.txt | count file produced by htseq-count for old bam file |
