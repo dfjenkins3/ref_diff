@@ -119,6 +119,7 @@ if __name__ == "__main__":
     parser.add_argument('--newtrans', '-T', help='new indexed transcript', required=True)
     parser.add_argument('--threads', help='number of threads for multithreaded steps [%(default)s]', default=1)
     args = parser.parse_args()
+    os.mkdir(args.output_dir)
     verify_file(args.oldbam)
     verify_file(args.fq1)
     verify_file(args.fq2)
