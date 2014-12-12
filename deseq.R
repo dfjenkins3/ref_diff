@@ -13,17 +13,17 @@ sampleTable <- data.frame(sampleName = sampleFiles,
                           fileName = sampleFiles,
                           condition = sampleCondition)
 ddsHTSeq <- DESeqDataSetFromHTSeqCount(sampleTable = sampleTable,
-                                       directory = directory,
+                                       directory = './',
                                        design= ~ condition)
 
 dds <- DESeq(ddsHTSeq)
 res <- results(dds)
 
-png(paste("DESeq2", sample_name, "png", sep="."),width=700,height=500, res=130)
+png(paste(directory, paste("DESeq2", sample_name, "png", sep="."), sep="/"),width=700,height=500, res=130)
 plotMA(res, main="DESeq2")
 dev.off()
 
 resOrdered <- res[order(res$pvalue),]
 
 write.csv(as.data.frame(resOrdered),
-          file=paste("DESeq2", sample_name, "csv", sep="."))
+          file=paste(directory, paste("DESeq2", sample_name, "csv", sep="."), sep="/"))
