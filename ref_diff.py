@@ -31,33 +31,74 @@ import sys
 import argparse
 from subprocess import call
 
-def main(fq1, fq2, tran_index, genome_index, out_dir, threads):
-    run_tophat(fq1, fq2, tran_index, genome_index, out_dir, threads)
+def main(fq1, fq2, tran_index, genome_index, out_dir, threads, old_bam, old_trans):
+    #softlink old bam to results directory
+    os.symlink(old_bam, out_dir + "/previous.bam")
+    old_bam_link = out_dir + "/previous.bam"
+    #run tophat alignment with new bam and ref
+    new_bam = run_tophat(fq1, fq2, tran_index, genome_index, out_dir, threads)
+    #name sort old alignment
+    sorted_old = sort_bam(old_bam_link, threads)
+    #name sort new alignment
+    sorted_new = sort_bam(new_bam, threads)
+    #htseq-count old alignment
+    old_counts = run_htseqcount(sorted_old, old_trans+'.gtf')
+    #htseq-count new alignment
+    new_counts = run_htseqcount(sorted_new, tran_index+'.gtf')
+    #run intersect counts script
+    old_i,new_i = intersect_counts(old_counts, new_counts, old_trans+'.gtf', tran_index+'.gtf')
+    #run deseq script
+    deseq_result = run_deseq(old_i, new_i, out_dir)
+    #run annotation script
+    annotate_result(deseq_result, old_i, new_i, tran_index+'.gtf')
 
 def run_tophat(fq1, fq2, transcript_index, genome_index, out_dir, threads):
     check_result(call(["tophat",
                        "--read-mismatches=3",
-                       "--read-edit-dist=3",
-                       "--max-multihits=20",
-                       "--splice-mismatches=1",
-                       "--output-dir=",out_dir,
-                       "--transcriptome-index=",transcript_index,
-                       "--coverage-search",
-                       "--mate-inner-dist=50",
-                       "--microexon-search",
-                       "--mate-std-dev=50",
-                       "--num-threads=",threads,
-                       genome_index,
-                       fq1,
-                       fq2]))
+                      "--read-edit-dist=3",
+                      "--max-multihits=20",
+                      "--splice-mismatches=1",
+                      "--output-dir="+out_dir,
+                      "--transcriptome-index="+transcript_index,
+                      "--coverage-search",
+                      "--mate-inner-dist=50",
+                      "--microexon-search",
+                      "--mate-std-dev=50",
+                      "--num-threads="+str(threads),
+                      genome_index,
+                      fq1,
+                      fq2]))
+    return out_dir+'/accepted_hits.bam'
 
-def run_htseqcount(arg1,arg2):
+def run_htseqcount(bam, gtf):
     #do it
-    pass
+    counts = os.path.splitext(bam)[0] + '.counts.txt'
+    count_fh = open(counts, 'w')
+    check_result(call(["htseq-count", bam, gtf], stdout=count_fh))
+    count_fh.close()
+    return counts
 
-def run_deseq(arg1, arg2):
-    #do it
-    pass
+def run_deseq(old, new, out_dir):
+    deseq_script = os.path.dirname(os.path.abspath(__file__)) + '/deseq.R'
+    check_result(call(["Rscript",deseq_script,out_dir,old,new,"results"]))
+    return out_dir + '/DESeq2.results.csv'
+
+def intersect_counts(old, new, o_i, n_i):
+    intersect_script = os.path.dirname(os.path.abspath(__file__)) + '/intersect_gene_lists.pl'
+    check_result(call([intersect_script,"-o",old,"-n",new,"-g",o_i,"-G",n_i]))
+    return old + '.intersect', new + '.intersect'
+
+def annotate_result(deseq, old, new, gtf):
+    annotate_script = os.path.dirname(os.path.abspath(__file__)) + '/intersect_results_annotate.pl'
+    output = os.path.splitext(deseq)[0] + '.annotated.csv'
+    out_fh = open(output, 'w')
+    check_result(call([annotate_script,"-d",deseq,"-h",old,"-H",new,"-G",gtf], stdout=out_fh))
+    out_fh.close()
+
+def sort_bam(bam, threads):
+    sort_prefix = os.path.splitext(bam)[0] + '.name'
+    check_result(call(["samtools","sort","-n","-@",str(threads),bam,sort_prefix]))
+    return sort_prefix+'.bam'
     
 def verify_file(file):
     if not os.path.isfile(file):
@@ -86,5 +127,7 @@ if __name__ == "__main__":
     verify_file(args.oldun)
     verify_file(args.fq1)
     verify_file(args.fq2)
-    verify_file(args.fq1)
-    main(args.fq1, args.fq2, args.newtrans, args.newref, args.output_dir, args.threads)
+    verify_file(args.oldtrans+'.gtf')
+    verify_file(args.newtrans+'.gtf')
+    main(args.fq1, args.fq2, args.newtrans, args.newref, args.output_dir,
+         args.threads, args.oldbam, args.oldtrans)
