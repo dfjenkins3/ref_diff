@@ -73,7 +73,7 @@ def run_tophat(fq1, fq2, transcript_index, genome_index, out_dir, threads):
 def run_htseqcount(bam, gtf):
     counts = os.path.splitext(bam)[0] + '.counts.txt'
     count_fh = open(counts, 'w')
-    check_result(call(["htseq-count","-f","bam","-r","name", bam, gtf], stdout=count_fh))
+    check_result(call(["htseq-count","-f","bam","-s","no","-r","name", bam, gtf], stdout=count_fh))
     count_fh.close()
     return counts
 
